@@ -1,0 +1,243 @@
+/*
+ * Copyright (C) 2023, HENSOLDT Cyber GmbH
+ * Copyright 2018, Data61, CSIRO (ABN 41 687 119 230)
+ *
+ * SPDX-License-Identifier: BSD-2-Clause
+ *
+ *
+ * Platform specific settings for Jetson TX2-NX on a206 carrier board
+ *
+ * The platformn physical memory usage is:
+ *
+ *    0x1'7584'4000 +---------------------------------------------------------+
+ *                  |                                                         |
+ *                  | VM's emulated physical memory                           |
+ *                  |                                                         |
+ *                  | 0xf900'0000 +-------------+--------------+              |
+ *                  |             |             | free         |              |                         |
+ *                  |             |             +--------------+ 0xf7eb1200   |
+ *                  |             |             | initrd       |              |
+ *                  | 0xf700'0000 |             +--------------+              |
+ *                  |             |             | free         |              |
+ *                  |             |             +--------------+ 0xf2050000   |
+ *                  |             |             | DTB          |              |
+ *                  | 0xf200'0000 |             +--------------+              |
+ *                  |             |             | free         |              |
+ *                  |             |             +--------------+ 0xf1f31200   |
+ *                  |             |             | Linux kernel |              |
+ *                  | 0xf108'0000 |             +--------------+              |
+ *                  |             | 128 MiB RAM | free         |              |
+ *                  | 0xf100'0000 +-------------+--------------+              |
+ *    0x0'f100'0000 |                                                         |
+ *                  | free                                                    |
+ *    0x0'f011'0000 +---------------------------------------------------------+
+ *                  | reserved                                                |
+ *    0x0'f000'0000 +---------------------------------------------------------+
+ *                  | free                                                    |
+ *    0x0'8000'0000 +---------------------------------------------------------+
+ *
+ *
+ * If 1:1 mapping is enabled, the init_ram module uses ram_ut_alloc_iterator to
+ * map guest memory, which retypes untyped objects to create the guest memory
+ * mappings. When untypes are declared like simple_size24_pool in the camkes
+ * file, generic untyped objects are added to the CSpace of the VMM and are
+ * mapped in the camkes_make_simple() with:
+ *
+ *      simple_data.untyped[0] = (camkes_untyped_t) {
+ *          .cptr      = 19,
+ *          .paddr     = make_frame_get_paddr(19),
+ *          .size_bits = 24,
+ *          .device    = false
+ *      };
+ * This means the physical address of the untyped don't matter.
+ *
+ * VMM untyped objects can also be defined by using the untyped_mmio entry,
+ * which adds the untyped with a specific physical address then:
+ *
+ *      simple_data.untyped[12] = (camkes_untyped_t){
+ *          .cptr      = 31,
+ *          .paddr     = 134479872,
+ *          .size_bits = 12,
+ *          .device    = true
+ *      };
+ *      simple_data.untyped[13] = (camkes_untyped_t){
+ *          .cptr      = 32,
+ *          .paddr     = 1073741824,
+ *          .size_bits = 29,
+ *          .device    = true
+ *      };
+ *
+ * The ram_paddr_base is a check that allows the user to specify the physical
+ * memory region that backs the guest memory map, instead of being backed by
+ * random memory regions. Benefits of this approach are that a guest is
+ * guranteed to be mapped 1:1, which allows for DMA transactions to work without
+ * an SMMU, but it would also allow the user to have fine-grained control over
+ * where guests end up in memory.
+ *
+ * For example, consider a VM with RAM at 0x1000'0000 to 0x3000'0000
+ *
+ *      #define VM_RAM_BASE         0x10000000
+ *      #define VM_RAM_SIZE         0x20000000
+ *
+ * A 1:1 mapping for this area requires providing an untyped object for the
+ * region:
+ *
+ *      #define VM_PADDR_RAM_BASE   0x10000000
+ *
+ *      vm0.vm_image_config = {
+ *          "map_one_to_one" : true,
+ *      };
+ *
+ *      vm0.untyped_mmios = ["0x10000000:29"];
+ *
+ * If the guest is to be backed by memory at 0x4000'0000
+ *
+ *      #define VM_PADDR_RAM_BASE 0x40000000
+ *
+ *      vm0.untyped_mmios = ["0x40000000:29"];
+ *
+ * If any memory can be used:
+ *
+ *      vm0.vm_image_config = {
+ *          "map_one_to_one" : false,
+ *      };
+ *
+ *      vm0.simple_untyped24_pool = 33;
+ */
+
+
+
+// Define the VM's physical RAM and where to put the DTB and initrd.
+#define VM_RAM_BASE         0xF1000000
+#define VM_RAM_SIZE         0x08000000 // 128 MiB
+#define VM_DTB_ADDR         0xF2000000
+#define VM_INITRD_ADDR      0xF7000000
+
+// The VM's RAM is a 1:1 mapping.
+#define VM_RAM_PADDR_BASE   0x100000000
+
+
+
+assembly {
+    composition {
+        /* empty */
+    }
+
+    configuration {
+
+        vm0.num_vcpus = 1; // 4
+
+        vm0.dtb = dtb([
+            {"path": "/chipid@100000"},
+           {"path": "/gpio@2200000"},
+           {"path": "/pinmux@2430000"},
+           {"path": "/mc_sid@2c00000"},
+           {"path": "/mc"},
+           {"path": "/timer@3020000"},
+           {"path": "/efuse@3820000"},
+           // {"path": "/serial@3100000"}, // ToDo: virtualize this peripheral
+           {"path": "/serial@3110000"},
+           {"path": "/serial@3130000"},
+           {"path": "/serial@3140000"},
+           {"path": "/serial@3150000"},
+           {"path": "/tachometer@39c0000"},
+           {"path": "/tegra-hsp@3c00000"},
+           {"path": "/clock@5000000"},
+           {"path": "/funnel_major@8010000"},
+           {"path": "/etf@8030000"},
+           {"path": "/etr@8050000"},
+           {"path": "/tpiu@8060000"},
+           {"path": "/stm@8070000"},
+           {"path": "/funnel_minor@8820000"},
+           {"path": "/ptm_bpmp@8a1c000"},
+           {"path": "/funnel_bccplex@9010000"},
+           {"path": "/ptm@9840000"},
+           {"path": "/ptm@9940000"},
+           {"path": "/ptm@9a40000"},
+           {"path": "/ptm@9b40000"},
+           {"path": "/tegra-hsp@b150000"},
+           {"path": "/tegra-hsp@c150000"},
+           {"path": "/gpio@c2f0000"},
+           {"path": "/pmc@c360000"},
+           {"path": "/pmc@c370000"},
+           /* bpmp node */
+           {"properties" : {"compatible[0]" : "nvidia,tegra186-bpmp"}},
+        ]);
+
+        vm0.mmios = [
+            "0x03100000:0x1000:12", // /serial@3100000
+            "0x03886000:0x1000:12", // Interrupt Controller Virtual CPU interface (VM view)
+        ];
+
+        // for VM memory and device passthrough
+        vm0.untyped_mmios = [
+            // The Linux kernel memory region as defined by VM_RAM_BASE and
+            // VM_RAM_SIZE. The 128 MiB region 0xf1000000 - 0xf9000000 is
+            // contiguous, but there is an seL4's constraint that untyped
+            // objects can't be larger than their alignment. Thus multiple
+            // adjacent regions must be given.
+            "0xF1000000:24",
+            "0xF2000000:25",
+            "0xF4000000:26",
+            "0xF8000000:24",
+        ];
+
+        vm0.linux_address_config = {
+            "linux_ram_paddr_base": VAR_STRINGIZE(VM_RAM_PADDR_BASE),
+            "linux_ram_base":       VAR_STRINGIZE(VM_RAM_BASE),
+            "linux_ram_size":       VAR_STRINGIZE(VM_RAM_SIZE),
+            "dtb_addr":             VAR_STRINGIZE(VM_DTB_ADDR),
+            "initrd_addr":          VAR_STRINGIZE(VM_INITRD_ADDR),
+        };
+
+        vm0.linux_image_config = {
+
+            // options for linux_bootcmdline
+            // see also https://www.kernel.org/doc/html/v6.2
+            // https://www.kernel.org/doc/html/v6.2/admin-guide/kernel-parameters.html
+            //
+            //   console=hvc0
+            //   nosmp
+            //   rw       (Mount root device read-write on boot)
+            //   debug    (Enable kernel debugging, events log level)
+            //   loglevel=8
+            //       0 (KERN_EMERG)          system is unusable
+            //       1 (KERN_ALERT)          action must be taken immediately
+            //       2 (KERN_CRIT)           critical conditions
+            //       3 (KERN_ERR)            error conditions
+            //       4 (KERN_WARNING)        warning conditions
+            //       5 (KERN_NOTICE)         normal but significant condition
+            //       6 (KERN_INFO)           informational
+            //       7 (KERN_DEBUG)          debug-level messages
+            //   ignore_loglevel
+            //   root=/dev/ram0
+            //   pci=nomsi,realloc=off,bios
+            //   initcall_blacklist=clk_disable_unused
+            //   init=/sbin/init
+            //   earlycon
+            //     uart[8250],[io|mmio|mmio16|mmio32,]<addr>[,options]
+            //        Start an early, polled-mode console on the 8250/16550
+            //        UART at the specified address. Access happens either via
+            //        8-bit ("mmio", default), 16-bit ("mmio16"), or 32-bit
+            //        ("mmio32"). 'options' are specified in the same format
+            //        described for  "console=ttyS<n>"; if unspecified, the h/w
+            //        is not re-initialized.
+            //     pl011,[mmio32,]<addr>
+            //        Start an early, polled-mode console on a pl011 serial port
+            //        at the specified address. The pl011 serial port must
+            //        already be setup and configured. Options are not yet
+            //        supported. If 'mmio32' is specified, then only the driver
+            //        will use only 32-bit accessors to read/write the device
+            //        registers.
+            //     sbi
+            //        Use RISC-V SBI for early console.
+            //
+            // options for linux_stdout
+            //   /serial@3100000
+            //   hvc0
+
+            "linux_bootcmdline": "console=ttyS0,115200n1 no_console_suspend=1 earlycon=uart8250,mmio32,0x03100000 debug init=/sbin/init",
+            "linux_stdout": "/serial@3100000",
+        };
+    }
+}
