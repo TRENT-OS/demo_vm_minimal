@@ -1,0 +1,175 @@
+/*
+ * Copyright (C) 2022, HENSOLDT Cyber GmbH
+ * Copyright 2018, Data61, CSIRO (ABN 41 687 119 230)
+ *
+ * SPDX-License-Identifier: BSD-2-Clause
+ *
+ *
+ * Platform specific settings for qemu-arm-virt
+ *
+ * Assuming QEMU is configured to provide 3 GiB RAM, this is the physical
+ * memory usage:
+ *
+ *    0x1'0000'0000 +---------------------------------------------+
+ *                  | seems QEMU reserves the top 24 MiB          |
+ *    0x0'FE80'0000 +---------------------------------------------+
+ *                  | free, used by seL4 kernel, VMM and apps     |
+ *    0x0'6000'0000 +---------------------------------------------+
+ *                  |                                             |
+ *                  |  0x6000'0000 +-------------------+          |
+ *                  |              | 4 MiB for DTB     |          |
+ *                  |  0x5fc0'8000 +-------------------+          |
+ *                  |              | 28 MiB for initrd |          |
+ *                  |  0x5e00'0000 +-------------------+          |
+ *                  |              | free              |          |
+ *                  |              +-------------------+          |
+ *                  |              | kernel            |          |
+ *                  |  0x4008'0000 +-------------------+          |
+ *                  |              | free              |          |
+ *                  |  0x4000'0000 +-------------------+          |
+ *                  |                                             |
+ *                  |  512 MiB for VM's emulated physical memory  |
+ *                  |                                             |
+ *    0x0'4000'0000 +---------------------------------------------+
+ *
+ *
+ * With the current images, the actual memory usage within the VM is:
+ *
+ *    0x40080000 - 0x40f31200: about 15 MiB, linux kernel
+ *    0x5e000000 - 0x5eeb1200: about 15 MiB, initrd
+ *    0x5fc00000 - 0x5fc50000: 320 KiB, generated DTB
+ *
+ */
+
+#define VM_RAM_PADDR_BASE   0x40000000
+#define VM_RAM_BASE         VM_RAM_PADDR_BASE // aim for a 1:1 mapping
+#define VM_RAM_SIZE         0x20000000 // 512 MiB (= 2^29)
+
+#define VM_INITRD_ADDR      0x5E000000
+#define VM_DTB_ADDR         0x5FC00000
+
+assembly {
+    composition {
+        /* empty */
+    }
+
+    configuration {
+
+        vm0.dtb = dtb([
+            {"path": "/pl011@9000000"},
+        ]);
+
+        vm0.mmios = [
+            "0x08040000:0x1000:12", // Interrupt Controller Virtual CPU interface (VM view)
+        ];
+
+        /*
+         * The VM's RAM must be backed by physical memory. It can be taken from
+         * a pool, so the location is more or less random
+         *
+         *      vm0.simple_untyped24_pool = 32; // 512 MiB as 32x 16 MiB
+         *
+         * The generic untypes from the "simple_size24_pool" are added to the
+         * CSpace of the VMM and mapped in the camkes_make_simple(). The actual
+         * physical address of each untyped doesn't matter.
+         *
+         *      simple_data.untyped[0] = (camkes_untyped_t) {
+         *          .cptr      = 19,
+         *          .paddr     = make_frame_get_paddr(19),
+         *          .size_bits = 24,
+         *          .device    = false
+         *      };
+         *
+         *
+         * Set the guest RAM to be backed by physical memory at a specific
+         * location.
+         *
+         *      vm0.untyped_mmios = ["0x40000000:29"];
+         *
+         * The init_ram module uses ram_ut_alloc_iterator to map guest memory,
+         * which retypes untyped objects to create the guest memory mappings.
+         * Untyped objects defined as untyped_mmio entry have a specific
+         * physical address:
+         *
+         *      simple_data.untyped[0] = (camkes_untyped_t){
+         *          .cptr      = 31,
+         *          .paddr     = 134479872, // 0x08040000
+         *          .size_bits = 12,
+         *          .device    = true
+         *      };
+         *      simple_data.untyped[1] = (camkes_untyped_t){
+         *          .cptr      = 32,
+         *          .paddr     = 1073741824, // 0x40000000
+         *          .size_bits = 29,
+         *          .device    = true
+         *      };
+         *
+         *
+         * Set a explicit 1:1 mapping, which allows DMA transactions to work
+         * without an SMMU.
+         *
+         *      vm0.untyped_mmios = ["0x40000000:29"];
+         *      vm0.vm_image_config = { "map_one_to_one" : true };
+         *
+         */
+
+        vm0.untyped_mmios = [
+            "0x40000000:29", // Linux kernel memory regions
+        ];
+
+        vm0.linux_address_config = {
+            "linux_ram_paddr_base": VAR_STRINGIZE(VM_RAM_PADDR_BASE),
+            "linux_ram_base":       VAR_STRINGIZE(VM_RAM_BASE),
+            "linux_ram_size":       VAR_STRINGIZE(VM_RAM_SIZE),
+            "linux_ram_offset":     "0", // unused
+            "dtb_addr":             VAR_STRINGIZE(VM_DTB_ADDR),
+            "initrd_addr":          VAR_STRINGIZE(VM_INITRD_ADDR),
+            "initrd_max_size":      "0", // unused
+        };
+
+        vm0.linux_image_config = {
+
+            // "map_one_to_one" : true,
+
+            "linux_bootcmdline": "debug ignore_loglevel",
+                // console=hvc0
+                // nosmp
+                // rw       (Mount root device read-write on boot)
+                // debug    (Enable kernel debugging, events log level)
+                // loglevel=8
+                //     0 (KERN_EMERG)          system is unusable
+                //     1 (KERN_ALERT)          action must be taken immediately
+                //     2 (KERN_CRIT)           critical conditions
+                //     3 (KERN_ERR)            error conditions
+                //     4 (KERN_WARNING)        warning conditions
+                //     5 (KERN_NOTICE)         normal but significant condition
+                //     6 (KERN_INFO)           informational
+                //     7 (KERN_DEBUG)          debug-level messages
+                // ignore_loglevel
+                // root=/dev/ram0
+                // pci=nomsi,realloc=off,bios
+                // initcall_blacklist=clk_disable_unused
+                //   earlycon
+                //     uart[8250],[io|mmio|mmio16|mmio32,]<addr>[,options]
+                //        Start an early, polled-mode console on the 8250/16550
+                //        UART at the specified address. Access happens either via
+                //        8-bit ("mmio", default), 16-bit ("mmio16"), or 32-bit
+                //        ("mmio32"). 'options' are specified in the same format
+                //        described for  "console=ttyS<n>"; if unspecified, the h/w
+                //        is not re-initialized.
+                //     pl011,[mmio32,]<addr>
+                //        Start an early, polled-mode console on a pl011 serial port
+                //        at the specified address. The pl011 serial port must
+                //        already be setup and configured. Options are not yet
+                //        supported. If 'mmio32' is specified, then only the driver
+                //        will use only 32-bit accessors to read/write the device
+                //        registers.
+                //     sbi
+                //        Use RISC-V SBI for early console.
+
+            "linux_stdout": "/pl011@9000000",
+                // hvc0
+                // /pl011@9000000
+        };
+    }
+}
