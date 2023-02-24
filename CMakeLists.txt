@@ -12,6 +12,7 @@ project(demo_vm_minimal C)
 # use the SDK
 find_package(os-sdk REQUIRED)
 os_sdk_set_defaults()
+set(LibUtilsDefaultZfLogLevel 2 CACHE STRING "")
 
 # Kernel settings
 set(KernelArmHypervisorSupport ON CACHE BOOL "" FORCE)
@@ -19,6 +20,7 @@ set(KernelArmVtimerUpdateVOffset OFF CACHE BOOL "" FORCE)
 set(KernelArmDisableWFIWFETraps ON CACHE BOOL "" FORCE)
 set(LibUSB OFF CACHE BOOL "" FORCE)
 set(VmInitRdFile ON CACHE BOOL "" FORCE)
+set(CapDLLoaderMaxObjects 8192 CACHE STRING "" FORCE)
 
 # Allow platform to overwrite settings
 include("plat/${PLATFORM}/plat.cmake")
@@ -53,10 +55,10 @@ find_package(camkes-vm-images REQUIRED)
 find_package(camkes-vm-linux REQUIRED)
 include("${CAMKES_VM_LINUX_HELPERS_PATH}")
 
-# images for QEMU
-set(VM_IMG_LINUX "${CAMKES_VM_IMAGES_DIR}/qemu-arm-virt/linux")
-set(VM_IMG_ROOTFS "${CAMKES_VM_IMAGES_DIR}/qemu-arm-virt/rootfs.cpio.gz")
-set(VM_IMG_DTB "${CAMKES_VM_IMAGES_DIR}/qemu-arm-virt/linux-dtb")
+# images for the selected platform
+set(VM_IMG_LINUX "${CAMKES_VM_IMAGES_DIR}/${PLATFORM}/linux")
+set(VM_IMG_ROOTFS "${CAMKES_VM_IMAGES_DIR}/${PLATFORM}/rootfs.cpio.gz")
+set(VM_IMG_DTB "${CAMKES_VM_IMAGES_DIR}/${PLATFORM}/linux-dtb")
 
 # patch DTB to use proper 'initrd-start' and 'initrd-end'
 UpdateDtbFromInitrd(
