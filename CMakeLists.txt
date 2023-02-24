@@ -13,6 +13,9 @@ project(demo_vm_minimal C)
 find_package(os-sdk REQUIRED)
 os_sdk_set_defaults()
 
+set(LibUtilsDefaultZfLogLevel 2 CACHE STRING "")
+set(CapDLLoaderMaxObjects 8192 CACHE STRING "" FORCE)
+
 # Kernel settings
 set(KernelArmHypervisorSupport ON CACHE BOOL "" FORCE)
 set(KernelArmVtimerUpdateVOffset OFF CACHE BOOL "" FORCE)
