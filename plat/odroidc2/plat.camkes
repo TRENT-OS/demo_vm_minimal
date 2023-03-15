@@ -65,7 +65,8 @@ assembly {
         vm0.dtb = dtb([
             // {"path": "/serial@c81004c0"},
             // {"path": "/ethernet@c9410000"},
-            {"path": "/soc/bus@c8100000/serial@4c0"},
+            // {"path": "/soc/bus@c8100000/serial@4c0"},
+            {}
         ]);
 
         vm0.mmios = [
@@ -126,8 +127,11 @@ assembly {
                 // "",
 
 
-            "kernel_stdout": "/soc/bus@c8100000/serial@4c0"
+            "kernel_stdout": "/pl011@f9000000"
+                // /pl011@f9000000 is a hacked new virtual UART
+                // /soc/bus@c8100000/serial@4c0
                 // hvc0
+                //
         };
     }
 }
