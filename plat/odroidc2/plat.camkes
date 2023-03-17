@@ -7,17 +7,44 @@
  *
  * Platform specific settings for Odroid C2
  *
+ *    0x8000'0000 +---------------------------------------------+
+ *                | 3328 MiB for seL4 kernel, VMM and apps      |
+ *    0x3000'0000 +---------------------------------------------+
+ *                |                                             |
+ *                |  0x3000'0000 +-------------------+          |
+ *                |              | 4 MiB for DTB     |          |
+ *                |  0x2fc0'0000 +-------------------+          |
+ *                |              | 28 MiB for initrd |          |
+ *                |  0x2e00'0000 +-------------------+          |
+ *                |              | free              |          |
+ *                |              +-------------------+          |
+ *                |              | kernel            |          |
+ *                |  0x2008'0000 +-------------------+          |
+ *                |              | 512 KiB free      |          |
+ *                |  0x2000'0000 +-------------------+          |
+ *                |                                             |
+ *                |  256 MiB for VM's emulated physical memory  |
+ *                |                                             |
+ *    0x2000'0000 +---------------------------------------------+
+ *                | 512 MiB for seL4 kernel, VMM and apps       |
+ *    0x0000'0000 +---------------------------------------------+
+ *
+ * With the current images, the actual memory usage within the VM is:
+ *
+ *    0x2008'0000 - 0x2150'1a00: about 21 MiB, linux kernel
+ *    0x2e00'0000 - 0x2eb8'1a00: about 12 MiB, initrd
+ *    0x2fc0'0000 - 0x5fc5'0000: 320 KiB, generated DTB
+
  */
 
-#define VM_RAM_BASE         0x20000000
-#define VM_RAM_SIZE         0x10000000
+#define VM_RAM_PADDR_BASE   0x20000000
+#define VM_RAM_BASE         VM_RAM_PADDR_BASE // aim for a 1:1 mapping
+#define VM_RAM_SIZE         0x10000000 // 256 MiB (= 2^28)
 
-#define VM_RAM_OFFSET       0x00000000
+#define VM_INITRD_ADDR      0x2d700000
+#define VM_DTB_ADDR         0x2e000000
 
-#define VM_DTB_ADDR         0x2F000000
-#define VM_INITRD_ADDR      0x2D700000
 
-#define VM_INITRD_MAX_SIZE  0x1900000 // 25 MiB
 
 assembly {
     composition {
@@ -26,9 +53,19 @@ assembly {
 
     configuration {
 
+        // DTB content
+        //      aliases {
+        //         serial0 = "/soc/bus@c8100000/serial@4c0";
+        //         ethernet0 = "/soc/ethernet@c9410000";
+        //      };
+        //
+        //      chosen {
+        //         stdout-path = "serial0:115200n8";
+        //      };
         vm0.dtb = dtb([
-            {"path": "/serial@c81004c0"},
-            {"path": "/ethernet@c9410000"},
+            // {"path": "/serial@c81004c0"},
+            // {"path": "/ethernet@c9410000"},
+            {"path": "/soc/bus@c8100000/serial@4c0"},
         ]);
 
         vm0.mmios = [
@@ -40,12 +77,12 @@ assembly {
         ];
 
         vm0.linux_address_config = {
+            "linux_ram_paddr_base": VAR_STRINGIZE(VM_RAM_PADDR_BASE),
             "linux_ram_base":       VAR_STRINGIZE(VM_RAM_BASE),
-            "linux_ram_paddr_base": VAR_STRINGIZE(VM_RAM_BASE),
             "linux_ram_size":       VAR_STRINGIZE(VM_RAM_SIZE),
-            "linux_ram_offset":     VAR_STRINGIZE(VM_RAM_OFFSET),
+            "linux_ram_offset":     "0", /* unused */
             "dtb_addr":             VAR_STRINGIZE(VM_DTB_ADDR),
-            "initrd_max_size":      VAR_STRINGIZE(VM_INITRD_MAX_SIZE),
+            "initrd_max_size":      "0", /* unused */
             "initrd_addr":          VAR_STRINGIZE(VM_INITRD_ADDR)
         };
 
@@ -71,9 +108,9 @@ assembly {
                 // initcall_blacklist=clk_disable_unused
                 // "",
 
-            // "linux_stdout": "/pl011@9000000",
+
+            "linux_stdout": "/soc/bus@c8100000/serial@4c0"
                 // hvc0
-                // /pl011@9000000
         };
     }
 }
