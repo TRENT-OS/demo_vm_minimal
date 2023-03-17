@@ -18,14 +18,14 @@
  *                  |                                             |
  *                  |  0x6000'0000 +-------------------+          |
  *                  |              | 4 MiB for DTB     |          |
- *                  |  0x5fc0'8000 +-------------------+          |
+ *                  |  0x5fc0'0000 +-------------------+          |
  *                  |              | 28 MiB for initrd |          |
  *                  |  0x5e00'0000 +-------------------+          |
  *                  |              | free              |          |
  *                  |              +-------------------+          |
  *                  |              | kernel            |          |
  *                  |  0x4008'0000 +-------------------+          |
- *                  |              | free              |          |
+ *                  |              | 512 KiB free      |          |
  *                  |  0x4000'0000 +-------------------+          |
  *                  |                                             |
  *                  |  512 MiB for VM's emulated physical memory  |
@@ -35,9 +35,9 @@
  *
  * With the current images, the actual memory usage within the VM is:
  *
- *    0x40080000 - 0x40f31200: about 15 MiB, linux kernel
- *    0x5e000000 - 0x5eeb1200: about 15 MiB, initrd
- *    0x5fc00000 - 0x5fc50000: 320 KiB, generated DTB
+ *    0x4008'0000 - 0x40f3'1200: about 15 MiB, linux kernel
+ *    0x5e00'0000 - 0x5eeb'1200: about 15 MiB, initrd
+ *    0x5fc0'0000 - 0x5fc5'0000: 320 KiB, generated DTB
  *
  */
 
@@ -45,8 +45,8 @@
 #define VM_RAM_BASE         VM_RAM_PADDR_BASE // aim for a 1:1 mapping
 #define VM_RAM_SIZE         0x20000000 // 512 MiB (= 2^29)
 
-#define VM_INITRD_ADDR      0x5E000000
-#define VM_DTB_ADDR         0x5FC00000
+#define VM_INITRD_ADDR      0x5e000000
+#define VM_DTB_ADDR         0x5fc00000
 
 assembly {
     composition {
