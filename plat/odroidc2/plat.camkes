@@ -76,17 +76,31 @@ assembly {
             "0x20000000:29", // Linux kernel memory regions
         ];
 
-        vm0.linux_address_config = {
-            "linux_ram_paddr_base": VAR_STRINGIZE(VM_RAM_PADDR_BASE),
-            "linux_ram_base":       VAR_STRINGIZE(VM_RAM_BASE),
-            "linux_ram_size":       VAR_STRINGIZE(VM_RAM_SIZE),
-            "dtb_addr":             VAR_STRINGIZE(VM_DTB_ADDR),
-            "initrd_addr":          VAR_STRINGIZE(VM_INITRD_ADDR)
+        vm0.vm_address_config = {
+            "ram_paddr_base": VAR_STRINGIZE(VM_RAM_PADDR_BASE),
+            "ram_base":       VAR_STRINGIZE(VM_RAM_BASE),
+            "ram_size":       VAR_STRINGIZE(VM_RAM_SIZE),
+            "dtb_addr":       VAR_STRINGIZE(VM_DTB_ADDR),
+            "initrd_addr":    VAR_STRINGIZE(VM_INITRD_ADDR),
         };
 
-        vm0.linux_image_config = {
+        vm0.vm_image_config = {
 
-            "linux_bootcmdline": "debug ignore_loglevel",
+            "map_one_to_one": true,
+            "clean_cache": false, /* not needed */
+
+            "provide_initrd": true,
+            "generate_dtb": true,
+            "provide_dtb": false,
+
+
+            "kernel_name": "linux",
+            "initrd_name": "linux-initrd",
+
+            "dtb_name": "linux-dtb",
+            "dtb_base_name": "",
+
+            "kernel_bootcmdline": "debug ignore_loglevel",
                 // console=hvc0
                 // nosmp
                 // rw       (Mount root device read-write on boot)
@@ -107,7 +121,7 @@ assembly {
                 // "",
 
 
-            "linux_stdout": "/soc/bus@c8100000/serial@4c0"
+            "kernel_stdout": "/soc/bus@c8100000/serial@4c0"
                 // hvc0
         };
     }

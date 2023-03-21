@@ -117,19 +117,30 @@ assembly {
             "0x40000000:29", // Linux kernel memory regions
         ];
 
-        vm0.linux_address_config = {
-            "linux_ram_paddr_base": VAR_STRINGIZE(VM_RAM_PADDR_BASE),
-            "linux_ram_base":       VAR_STRINGIZE(VM_RAM_BASE),
-            "linux_ram_size":       VAR_STRINGIZE(VM_RAM_SIZE),
-            "dtb_addr":             VAR_STRINGIZE(VM_DTB_ADDR),
-            "initrd_addr":          VAR_STRINGIZE(VM_INITRD_ADDR),
+        vm0.vm_address_config = {
+            "ram_paddr_base": VAR_STRINGIZE(VM_RAM_PADDR_BASE),
+            "ram_base":       VAR_STRINGIZE(VM_RAM_BASE),
+            "ram_size":       VAR_STRINGIZE(VM_RAM_SIZE),
+            "dtb_addr":       VAR_STRINGIZE(VM_DTB_ADDR),
+            "initrd_addr":    VAR_STRINGIZE(VM_INITRD_ADDR),
         };
 
-        vm0.linux_image_config = {
+        vm0.vm_image_config = {
 
-            // "map_one_to_one" : true,
+            "map_one_to_one": true,
+            "clean_cache": false, /* QEMU does not emulate caches anyway */
 
-            "linux_bootcmdline": "debug ignore_loglevel",
+            "provide_initrd": true,
+            "generate_dtb": true,
+            "provide_dtb": false,
+
+            "kernel_name": "linux",
+            "initrd_name": "linux-initrd",
+
+            "dtb_name": "linux-dtb",
+            "dtb_base_name": "",
+
+            "kernel_bootcmdline": "debug ignore_loglevel",
                 // console=hvc0
                 // nosmp
                 // rw       (Mount root device read-write on boot)
@@ -165,7 +176,7 @@ assembly {
                 //     sbi
                 //        Use RISC-V SBI for early console.
 
-            "linux_stdout": "/pl011@9000000",
+            "kernel_stdout": "/pl011@9000000",
                 // hvc0
                 // /pl011@9000000
         };
