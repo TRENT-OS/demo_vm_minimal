@@ -121,10 +121,8 @@ assembly {
             "linux_ram_paddr_base": VAR_STRINGIZE(VM_RAM_PADDR_BASE),
             "linux_ram_base":       VAR_STRINGIZE(VM_RAM_BASE),
             "linux_ram_size":       VAR_STRINGIZE(VM_RAM_SIZE),
-            "linux_ram_offset":     "0", // unused
             "dtb_addr":             VAR_STRINGIZE(VM_DTB_ADDR),
             "initrd_addr":          VAR_STRINGIZE(VM_INITRD_ADDR),
-            "initrd_max_size":      "0", // unused
         };
 
         vm0.linux_image_config = {
