@@ -13,6 +13,11 @@ project(demo_vm_minimal C)
 find_package(os-sdk REQUIRED)
 os_sdk_set_defaults()
 
+# ElfLoader settings
+#set(ElfloaderHashInstructions "hash_sha" CACHE STRING "" FORCE)
+#set(ElfloaderHashInstructions "hash_md5" CACHE STRING "" FORCE)
+set(ElfloaderHashInstructions "hash_none" CACHE STRING "" FORCE)
+
 # Kernel settings
 set(KernelArmHypervisorSupport ON CACHE BOOL "" FORCE)
 set(KernelArmVtimerUpdateVOffset OFF CACHE BOOL "" FORCE)
