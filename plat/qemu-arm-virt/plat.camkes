@@ -190,9 +190,10 @@ assembly {
                 //     sbi
                 //        Use RISC-V SBI for early console.
 
-            "kernel_stdout": "/pl011@f9000000", /* hacked new virtual UART */
+            "kernel_stdout": "/pl011@9000000"
                 // hvc0
-                // /pl011@9000000
+                // "/pl011@9000000"
+                // "/pl011@f9000000", /* hacked new virtual UART */
         };
     }
 }

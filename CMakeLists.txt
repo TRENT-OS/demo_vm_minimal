@@ -23,7 +23,7 @@ set(LibUSB OFF CACHE BOOL "" FORCE)
 set(VmPCISupport OFF CACHE BOOL "" FORCE)
 set(VmVirtioConsole OFF CACHE BOOL "" FORCE)
 set(VmVirtUart OFF CACHE BOOL "" FORCE)
-set(VmVirtUartPL011 ON CACHE BOOL "" FORCE)
+# set(VmVirtUartPL011 ON CACHE BOOL "" FORCE)
 
 # if("${PLATFORM}" STREQUAL "qemu-arm-virt")
 #     set(KernelArmExportPCNTUser ON CACHE BOOL "" FORCE)
