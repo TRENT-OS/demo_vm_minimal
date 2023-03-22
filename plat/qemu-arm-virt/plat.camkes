@@ -55,8 +55,16 @@ assembly {
 
     configuration {
 
+        /* These devices are kept by default:
+         *   /timer
+         *   /apb-pclk
+         *   /platform@c000000
+         *   /pmu
+         *   /flash@0
+         *   /psci
+         */
         vm0.dtb = dtb([
-            {"path": "/pl011@9000000"},
+            {"path": "/pl011@9000000"}, /* this will get virtualized */
         ]);
 
         vm0.mmios = [
@@ -145,7 +153,7 @@ assembly {
             "dtb_name": "linux-dtb",
             "dtb_base_name": "",
 
-            "kernel_bootcmdline": "debug ignore_loglevel",
+            "kernel_bootcmdline": "", // "debug ignore_loglevel earlycon=pl011,mmio32,0x420000"
                 // console=hvc0
                 // nosmp
                 // rw       (Mount root device read-write on boot)
