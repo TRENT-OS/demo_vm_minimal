@@ -24,6 +24,11 @@ set(VmPCISupport OFF CACHE BOOL "" FORCE)
 set(VmVirtioConsole OFF CACHE BOOL "" FORCE)
 set(VmVirtUart OFF CACHE BOOL "" FORCE)
 
+# if("${PLATFORM}" STREQUAL "qemu-arm-virt")
+#     set(KernelArmExportPCNTUser ON CACHE BOOL "" FORCE)
+#     set(KernelArmExportPTMRUser ON CACHE BOOL "" FORCE)
+# endif()
+
 # Allow platform to overwrite settings
 include("plat/${PLATFORM}/plat.cmake")
 os_sdk_setup()
