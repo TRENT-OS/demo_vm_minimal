@@ -71,12 +71,16 @@ UpdateDtbFromInitrd(
     VM_IMG_DTB_PATCHED
 )
 
+set(cpio_list
+    "linux-initrd:${VM_IMG_ROOTFS}"
+    "linux-dtb:${VM_IMG_DTB_PATCHED}"
+)
+
 DefineCAmkESVMFileServer(
     INSTANCE "fileServer"
     FILES
         "linux:${VM_IMG_LINUX}"
-        "linux-initrd:${VM_IMG_ROOTFS}"
-        "linux-dtb:${VM_IMG_DTB_PATCHED}"
+        "${cpio_list}"
     DEPENDS
         target_dtb_gen
 )
