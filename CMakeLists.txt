@@ -67,16 +67,15 @@ UpdateDtbFromInitrd(
     VM_IMG_DTB_PATCHED
 )
 
-AddToFileServer("linux" "${VM_IMG_LINUX}")
-AddToFileServer("linux-initrd" "${VM_IMG_ROOTFS}")
-AddToFileServer("linux-dtb" "${VM_IMG_DTB_PATCHED}" DEPENDS target_dtb_gen)
-get_target_property(FS_FILES vm_fserver_config FILES)
-get_target_property(FS_DEPS vm_fserver_config DEPS)
-include(cpio)
-MakeCPIO("file_server_archive.o" "${FS_FILES}" DEPENDS "${FS_DEPS}")
-add_library(fileserver_cpio STATIC EXCLUDE_FROM_ALL "file_server_archive.o")
-set_property(TARGET fileserver_cpio PROPERTY LINKER_LANGUAGE C)
-ExtendCAmkESComponentInstance(FileServer fileServer LIBS fileserver_cpio)
+DefineCAmkESVMFileServer(
+    INSTANCE "fileServer"
+    FILES
+        "linux:${VM_IMG_LINUX}"
+        "linux-initrd:${VM_IMG_ROOTFS}"
+        "linux-dtb:${VM_IMG_DTB_PATCHED}"
+    DEPENDS
+        target_dtb_gen
+)
 
 
 #-------------------------------------------------------------------------------
