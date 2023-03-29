@@ -55,6 +55,14 @@ assembly {
 
     configuration {
 
+        /* These devices are kept by default:
+         *   /timer
+         *   /apb-pclk
+         *   /platform@c000000
+         *   /pmu
+         *   /flash@0
+         *   /psci
+         */
         vm0.dtb = dtb([
             {"path": "/pl011@9000000"},
         ]);
