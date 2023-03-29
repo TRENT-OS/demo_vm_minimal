@@ -151,7 +151,7 @@ assembly {
             "dtb_name": "linux-dtb",
             "dtb_base_name": "",
 
-            "kernel_bootcmdline": "", // "debug ignore_loglevel earlycon=pl011,mmio32,0x420000"
+            "kernel_bootcmdline": "console=hvc0 debug ignore_loglevel earlycon=pl011,mmio32,0xf9000000",
                 // console=hvc0
                 // nosmp
                 // rw       (Mount root device read-write on boot)
@@ -187,7 +187,7 @@ assembly {
                 //     sbi
                 //        Use RISC-V SBI for early console.
 
-            "kernel_stdout": "/pl011@f9000000", /* virtual device */
+            "kernel_stdout": "hvc0",
                 // hvc0
                 // /pl011@9000000
         };
