@@ -63,9 +63,7 @@ assembly {
          *   /flash@0
          *   /psci
          */
-        vm0.dtb = dtb([
-            {"path": "/pl011@9000000"},
-        ]);
+        vm0.dtb = dtb([{}]);
 
         vm0.mmios = [
             "0x08040000:0x1000:12", // Interrupt Controller Virtual CPU interface (VM view)
@@ -189,7 +187,7 @@ assembly {
                 //     sbi
                 //        Use RISC-V SBI for early console.
 
-            "kernel_stdout": "/pl011@9000000",
+            "kernel_stdout": "/pl011@f9000000", /* virtual device */
                 // hvc0
                 // /pl011@9000000
         };

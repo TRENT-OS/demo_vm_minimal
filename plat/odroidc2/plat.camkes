@@ -62,11 +62,7 @@ assembly {
         //      chosen {
         //         stdout-path = "serial0:115200n8";
         //      };
-        vm0.dtb = dtb([
-            // {"path": "/serial@c81004c0"},
-            // {"path": "/ethernet@c9410000"},
-            {"path": "/soc/bus@c8100000/serial@4c0"},
-        ]);
+        vm0.dtb = dtb([{}]);
 
         vm0.mmios = [
             "0xc4306000:0x1000:12", // Interrupt Controller Virtual CPU interface (VM view)
@@ -126,7 +122,7 @@ assembly {
                 // "",
 
 
-            "kernel_stdout": "/soc/bus@c8100000/serial@4c0"
+            "kernel_stdout": "/pl011@f9000000", /* virtual device */
                 // hvc0
         };
     }

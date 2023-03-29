@@ -24,6 +24,8 @@ set(VmPCISupport OFF CACHE BOOL "" FORCE)
 set(VmVirtioConsole OFF CACHE BOOL "" FORCE)
 set(VmVirtUart OFF CACHE BOOL "" FORCE)
 
+set(VmVirtUartPL011 ON CACHE BOOL "" FORCE)
+
 # Allow platform to overwrite settings
 include("plat/${PLATFORM}/plat.cmake")
 os_sdk_setup()
