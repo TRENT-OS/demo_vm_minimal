@@ -101,8 +101,9 @@ assembly {
             "dtb_name": "linux-dtb",
             "dtb_base_name": "",
 
-            "kernel_bootcmdline": "debug ignore_loglevel",
+            "kernel_bootcmdline": "debug ignore_loglevel earlycon=pl011,mmio32,0xf9000000 console=/pl011@f9000000",
                 // console=hvc0
+                // earlycon=pl011,mmio32,0xf9000000
                 // nosmp
                 // rw       (Mount root device read-write on boot)
                 // debug    (Enable kernel debugging, events log level)
