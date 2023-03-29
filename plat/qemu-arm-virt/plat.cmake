@@ -10,3 +10,8 @@
 # there is a patch that makes them provide 3 GiB. There is still some automation
 # missing, which adjusts the memory automatically.
 set(QEMU_MEMORY "3048M")
+
+
+# Allow access to timers
+set(KernelArmExportPCNTUser ON CACHE BOOL "" FORCE)
+set(KernelArmExportPTMRUser ON CACHE BOOL "" FORCE)
