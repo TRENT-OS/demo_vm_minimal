@@ -65,8 +65,6 @@ assembly {
 
         // see also plat.camkes for more config values
         vm0.num_vcpus               = 1;
-        vm0.base_prio               = 100;
-        vm0._priority               = 101;
 
         vm0.num_extra_frame_caps    = 0;
         vm0.extra_frame_map_address = 0;
