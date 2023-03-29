@@ -17,8 +17,12 @@ os_sdk_set_defaults()
 set(KernelArmHypervisorSupport ON CACHE BOOL "" FORCE)
 set(KernelArmVtimerUpdateVOffset OFF CACHE BOOL "" FORCE)
 set(KernelArmDisableWFIWFETraps ON CACHE BOOL "" FORCE)
+
+# VMM Feature Settings Kernel settings
 set(LibUSB OFF CACHE BOOL "" FORCE)
-set(VmInitRdFile ON CACHE BOOL "" FORCE)
+set(VmPCISupport OFF CACHE BOOL "" FORCE)
+set(VmVirtioConsole OFF CACHE BOOL "" FORCE)
+set(VmVirtUart OFF CACHE BOOL "" FORCE)
 
 # Allow platform to overwrite settings
 include("plat/${PLATFORM}/plat.cmake")
