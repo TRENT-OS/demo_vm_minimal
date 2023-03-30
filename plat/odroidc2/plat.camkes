@@ -62,7 +62,11 @@ assembly {
         //      chosen {
         //         stdout-path = "serial0:115200n8";
         //      };
-        vm0.dtb = dtb([{}]);
+        vm0.dtb = dtb([
+            {}
+            //{"path": "/soc/bus@c8100000/serial@4c0"},
+            //{"path": "/soc/ethernet@c9410000"},
+        ]);
 
         vm0.mmios = [
             "0xc4306000:0x1000:12", // Interrupt Controller Virtual CPU interface (VM view)
@@ -101,7 +105,7 @@ assembly {
             "dtb_name": "linux-dtb",
             "dtb_base_name": "",
 
-            "kernel_bootcmdline": "debug ignore_loglevel earlycon=pl011,mmio32,0xf9000000 console=/pl011@f9000000",
+            "kernel_bootcmdline": "nosmp debug loglevel=8 console=/pl011@f9000000 earlycon=pl011,mmio32,0xf9001000",
                 // console=hvc0
                 // earlycon=pl011,mmio32,0xf9000000
                 // nosmp
@@ -123,7 +127,8 @@ assembly {
                 // "",
 
 
-            "kernel_stdout": "/pl011@f9000000", /* virtual device */
+            "kernel_stdout": "/pl011@f9000000",
+                // "/soc/bus@c8100000/serial@4c0"
                 // hvc0
         };
     }
