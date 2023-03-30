@@ -73,7 +73,7 @@ assembly {
         ];
 
         vm0.untyped_mmios = [
-            "0x20000000:29", // Linux kernel memory regions
+            "0x20000000:29", // physical memory for VM RAM
         ];
 
         vm0.vm_address_config = {
