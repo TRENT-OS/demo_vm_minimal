@@ -123,6 +123,11 @@ assembly {
             "ram_size":       VAR_STRINGIZE(VM_RAM_SIZE),
             "dtb_addr":       VAR_STRINGIZE(VM_DTB_ADDR),
             "initrd_addr":    VAR_STRINGIZE(VM_INITRD_ADDR),
+
+            /* This is not only the entry address, but also the load address
+             * in case the kernel image is a binary.
+             */
+            "kernel_entry_addr": VAR_STRINGIZE(VM_RAM_BASE),
         };
 
         vm0.vm_image_config = {
