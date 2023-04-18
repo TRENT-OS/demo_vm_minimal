@@ -53,20 +53,7 @@ assembly {
 
     configuration {
 
-        // DTB content
-        //      aliases {
-        //         serial0 = "/soc/bus@c8100000/serial@4c0";
-        //         ethernet0 = "/soc/ethernet@c9410000";
-        //      };
-        //
-        //      chosen {
-        //         stdout-path = "serial0:115200n8";
-        //      };
-        vm0.dtb = dtb([
-            // {"path": "/serial@c81004c0"},
-            // {"path": "/ethernet@c9410000"},
-            {"path": "/soc/bus@c8100000/serial@4c0"},
-        ]);
+        vm0.dtb = dtb([{}]);
 
         vm0.mmios = [
             "0xc4306000:0x1000:12", // Interrupt Controller Virtual CPU interface (VM view)
@@ -105,7 +92,7 @@ assembly {
             "dtb_name": "linux-dtb",
             "dtb_base_name": "",
 
-            "kernel_bootcmdline": "debug ignore_loglevel",
+            "kernel_bootcmdline": "debug ignore_loglevel earlycon=pl011,mmio32,0xf9000000 console=/pl011@f9000000",
                 // console=hvc0
                 // nosmp
                 // rw       (Mount root device read-write on boot)
@@ -126,7 +113,7 @@ assembly {
                 // "",
 
 
-            "kernel_stdout": "/soc/bus@c8100000/serial@4c0"
+            "kernel_stdout": "/pl011@f9000000"
                 // hvc0
         };
     }
