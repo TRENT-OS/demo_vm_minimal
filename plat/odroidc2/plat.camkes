@@ -53,7 +53,12 @@ assembly {
 
     configuration {
 
-        vm0.dtb = dtb([{}]);
+        vm0.dtb = dtb([
+            {"path": "/soc/bus@c8100000/serial@4c0"},
+            {"path": "/soc/ethernet@c9410000"},
+            {"path": "/soc/apb@d0000000/mmc@72000"},
+            {"path": "/soc/bus@c883c000/system-controller@0"},
+        ]);
 
         vm0.mmios = [
             "0xc4306000:0x1000:12", // Interrupt Controller Virtual CPU interface (VM view)
@@ -81,9 +86,9 @@ assembly {
             "map_one_to_one": true,
             "clean_cache": false, /* not needed */
 
-            "provide_initrd": true,
-            "generate_dtb": true,
-            "provide_dtb": false,
+            "provide_initrd": false,
+            "generate_dtb": false,
+            "provide_dtb": true,
 
 
             "kernel_name": "linux",
@@ -92,8 +97,10 @@ assembly {
             "dtb_name": "linux-dtb",
             "dtb_base_name": "",
 
-            "kernel_bootcmdline": "debug ignore_loglevel earlycon=pl011,mmio32,0xf9000000 console=/pl011@f9000000",
+            "kernel_bootcmdline": "debug loglevel=8 root=/dev/mmcblk1p2 rootwait rw pci=nomsi earlycon=meson,0xc81004c0 earlyprintk=serial console=ttyAML0,115200n8 nosmp maxcpus=1",
                 // console=hvc0
+                // earlycon=meson,0xc81004c0
+                // earlyprintk=serial
                 // nosmp
                 // rw       (Mount root device read-write on boot)
                 // debug    (Enable kernel debugging, events log level)
@@ -112,8 +119,8 @@ assembly {
                 // initcall_blacklist=clk_disable_unused
                 // "",
 
-
-            "kernel_stdout": "/pl011@f9000000"
+            "kernel_stdout": "serial0:115200n8",
+            // "kernel_stdout": "/pl011@f9000000"
                 // hvc0
         };
     }
