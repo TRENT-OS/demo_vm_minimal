@@ -185,5 +185,39 @@ assembly {
                 // hvc0
                 // /pl011@9000000
         };
+
+
+        /*
+         * ---------------
+         *       VM1
+         * ---------------
+         */
+        vm1.dtb = dtb([{}]);
+        vm1.mmios = [
+            "0x08040000:0x1000:12", // Interrupt Controller Virtual CPU interface (VM view)
+        ];
+        vm1.untyped_mmios = [
+            "0x80000000:29", // physical memory for VM RAM
+        ];
+        vm1.vm_address_config = {
+            "ram_paddr_base": "0x80000000",
+            "ram_base":       VAR_STRINGIZE(VM_RAM_BASE),
+            "ram_size":       VAR_STRINGIZE(VM_RAM_SIZE),
+            "dtb_addr":       VAR_STRINGIZE(VM_DTB_ADDR),
+            "initrd_addr":    VAR_STRINGIZE(VM_INITRD_ADDR),
+        };
+        vm1.vm_image_config = {
+            "map_one_to_one":     false,
+            "clean_cache":        false,
+            "provide_initrd":     true,
+            "generate_dtb":       true,
+            "provide_dtb":        false,
+            "kernel_name":        "linux",
+            "initrd_name":        "linux-initrd",
+            "dtb_name":           "linux-dtb",
+            "dtb_base_name":      "",
+            "kernel_bootcmdline": "",
+            "kernel_stdout":      "/pl011@f9000000", /* hacked new virtual UART */
+        };
     }
 }

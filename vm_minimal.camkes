@@ -43,6 +43,9 @@ assembly {
 
         component FileServer fileServer;
 
+        //--------------------------------------------------------------
+        // VM0
+        //--------------------------------------------------------------
         component VM vm0;
         connection seL4VMDTBPassthrough vm0_dtb(
             from vm0.dtb_self,
@@ -54,6 +57,23 @@ assembly {
         );
         connection seL4RPCDataport vm0_fs(
             from vm0.fs,
+            to   fileServer.fs_ctrl
+        );
+
+        //--------------------------------------------------------------
+        // VM1
+        //--------------------------------------------------------------
+        component VM vm1;
+        connection seL4VMDTBPassthrough vm1_dtb(
+            from vm1.dtb_self,
+            to   vm1.dtb
+        );
+        connection seL4GlobalAsynch vm1_notify_ready(
+            from vm1.notification_ready_connector,
+            to   vm1.notification_ready
+        );
+        connection seL4RPCDataport vm1_fs(
+            from vm1.fs,
             to   fileServer.fs_ctrl
         );
 
@@ -76,8 +96,20 @@ assembly {
         vm0.global_endpoint_base    = 1 << 27;
         vm0.simple                  = true;
         vm0.sem_value               = 0;
-        vm0.heap_size               = 0x300000;
-        vm0.fs_shmem_size           = 0x100000;
+        vm0.heap_size               = 0x300000; /* 3 MiB */
+        vm0.fs_shmem_size           = 0x100000; /* 1 MiB */
+
+        vm1.num_vcpus               = 1;
+        vm1.num_extra_frame_caps    = 0;
+        vm1.extra_frame_map_address = 0;
+        vm1.cnode_size_bits         = 23;
+        vm1.simple_untyped24_pool   = 12;
+        vm1.asid_pool               = true;
+        vm1.global_endpoint_base    = 1 << 27;
+        vm1.simple                  = true;
+        vm1.sem_value               = 0;
+        vm1.heap_size               = 0x300000; /* 3 MiB */
+        vm1.fs_shmem_size           = 0x100000; /* 1 MiB */
 
     }
 }
