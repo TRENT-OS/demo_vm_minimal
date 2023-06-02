@@ -23,6 +23,7 @@ set(LibUSB OFF CACHE BOOL "" FORCE)
 set(VmPCISupport OFF CACHE BOOL "" FORCE)
 set(VmVirtioConsole OFF CACHE BOOL "" FORCE)
 set(VmVirtUart OFF CACHE BOOL "" FORCE)
+# set(VmVirtUartPL011 ON CACHE BOOL "" FORCE)
 
 # Allow platform to overwrite settings
 include("plat/${PLATFORM}/plat.cmake")
@@ -58,27 +59,16 @@ find_package(camkes-vm-linux REQUIRED)
 include("${CAMKES_VM_LINUX_HELPERS_PATH}")
 
 # images for the selected platform
-set(VM_IMG_LINUX "${CAMKES_VM_IMAGES_DIR}/${PLATFORM}/linux")
-set(VM_IMG_ROOTFS "${CAMKES_VM_IMAGES_DIR}/${PLATFORM}/rootfs.cpio.gz")
+set(VM_IMG_LINUX "${CAMKES_VM_IMAGES_DIR}/${PLATFORM}/_vmlinuz-6.1.11-meson64")
+set(VM_IMG_ROOTFS "${CAMKES_VM_IMAGES_DIR}/${PLATFORM}/_initrd.img-6.1.11-meson64")
 set(VM_IMG_DTB "${CAMKES_VM_IMAGES_DIR}/${PLATFORM}/linux-dtb")
-
-# patch DTB to use proper 'initrd-start' and 'initrd-end'
-UpdateDtbFromInitrd(
-    "${VM_IMG_DTB}"
-    "${VM_IMG_ROOTFS}"
-    "0x4d700000" # initrd start
-    target_dtb_gen
-    VM_IMG_DTB_PATCHED
-)
 
 DefineCAmkESVMFileServer(
     INSTANCE "fileServer"
     FILES
         "linux:${VM_IMG_LINUX}"
         "linux-initrd:${VM_IMG_ROOTFS}"
-        "linux-dtb:${VM_IMG_DTB_PATCHED}"
-    DEPENDS
-        target_dtb_gen
+        "linux-dtb:${VM_IMG_DTB}"
 )
 
 
