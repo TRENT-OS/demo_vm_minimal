@@ -1,5 +1,7 @@
 #
-# Copyright (C) 2022, HENSOLDT Cyber GmbH
+# Copyright (C) 2022-2024, HENSOLDT Cyber GmbH
+# 
+# SPDX-License-Identifier: BSD-2-Clause
 #
 
 # need to increase the size here

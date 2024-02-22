@@ -1,7 +1,9 @@
 #
 # Demo VM minimal
 #
-# Copyright (C) 2022, HENSOLDT Cyber GmbH
+# Copyright (C) 2022-2024, HENSOLDT Cyber GmbH
+# 
+# SPDX-License-Identifier: BSD-2-Clause
 #
 
 cmake_minimum_required(VERSION 3.8.2)

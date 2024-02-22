@@ -1,5 +1,7 @@
 #
-# Copyright (C) 2022, HENSOLDT Cyber GmbH
+# Copyright (C) 2022-2024, HENSOLDT Cyber GmbH
+# 
+# SPDX-License-Identifier: BSD-2-Clause
 #
 
 # The seL4 default for QEMU is 1 GiB of RAM, which is usually enough for native
