@@ -64,7 +64,6 @@ assembly {
         fileServer.heap_size = 0x200000; // 128 KiB seems enough
 
         // see also plat.camkes for more config values
-        vm0.num_vcpus               = 1;
         vm0.base_prio               = 100;
         vm0._priority               = 101;
 

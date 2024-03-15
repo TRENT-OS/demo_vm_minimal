@@ -1,0 +1,94 @@
+
+/*
+ * Copyright (C) 2023, HENSOLDT Cyber GmbH
+ * Copyright 2018, Data61, CSIRO (ABN 41 687 119 230)
+ *
+ * SPDX-License-Identifier: BSD-2-Clause
+ */
+
+#define VM_RAM_PADDR_BASE   0xC0000000
+#define VM_RAM_BASE         VM_RAM_PADDR_BASE // aim for a 1:1 mapping
+#define VM_RAM_SIZE         0x20000000 // 512 MiB (= 2^29)
+
+#define VM_INITRD_ADDR      0xCD700000
+#define VM_DTB_ADDR         0xCF000000
+
+assembly {
+    composition {
+        /* empty */
+    }
+
+    configuration {
+
+        vm0.dtb = dtb([
+            {"path": "/serial@70006000"},
+            {"path": "/interrupt-controller@60004000"},
+            {"path": "/clock"},
+            // {"path": "/rtc"},
+            // {"path": "/gpio@6000d000"},
+            // {"path": "/mc"},
+            // {"path": "/pinmux@700008d4"},
+            // {"path": "/efuse@7000f800"},
+        ]);
+
+	    vm0.mmios = [
+            "0x50046000:0x1000:12" // Interrupt Controller Virtual CPU interface (Virtual Machine view)
+		];
+
+        vm0.untyped_mmios = [
+            "0xC0000000:29", // Linux kernel memory regions
+        ];
+
+        vm0.vm_address_config = {
+            "ram_paddr_base":   VAR_STRINGIZE(VM_RAM_PADDR_BASE),
+            "ram_base":         VAR_STRINGIZE(VM_RAM_BASE),
+            "ram_size":         VAR_STRINGIZE(VM_RAM_SIZE),
+            "dtb_addr":         VAR_STRINGIZE(VM_DTB_ADDR),
+            "initrd_addr":      VAR_STRINGIZE(VM_INITRD_ADDR),
+
+            /* This is not only the entry address, but also the load address
+             * in case the kernel image is a binary.
+             */
+            "kernel_entry_addr": VAR_STRINGIZE(VM_RAM_BASE),
+        };
+
+        vm0.vm_image_config = {
+
+            "map_one_to_one": true,
+            "clean_cache": false, /* not needed */
+
+            "provide_initrd": true,
+            "generate_dtb": false,
+            "provide_dtb": true,
+
+            "kernel_name": "linux",
+            "initrd_name": "linux-initrd",
+
+            "dtb_name": "linux-dtb",
+            "dtb_base_name": "",
+
+            "kernel_bootcmdline": "nosmp debug ignore_loglevel console=ttyS0,115200n8 earlycon=uart8250,mmio32,0x70006000",
+                // console=hvc0
+                // rw       (Mount root device read-write on boot)
+                // debug    (Enable kernel debugging, events log level)
+                // loglevel=8
+                //     0 (KERN_EMERG)          system is unusable
+                //     1 (KERN_ALERT)          action must be taken immediately
+                //     2 (KERN_CRIT)           critical conditions
+                //     3 (KERN_ERR)            error conditions
+                //     4 (KERN_WARNING)        warning conditions
+                //     5 (KERN_NOTICE)         normal but significant condition
+                //     6 (KERN_INFO)           informational
+                //     7 (KERN_DEBUG)          debug-level messages
+                // ignore_loglevel
+                // root=/dev/ram0
+                // pci=nomsi,realloc=off,bios
+                // initcall_blacklist=clk_disable_unused
+                // "",
+
+            "kernel_stdout": "serial0:115200n8",
+                // hvc0
+                // /serial@70006000
+        };
+    }
+}
