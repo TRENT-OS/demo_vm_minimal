@@ -61,26 +61,13 @@ include("${CAMKES_VM_LINUX_HELPERS_PATH}")
 
 # images for the selected platform
 set(VM_IMG_LINUX "${CAMKES_VM_IMAGES_DIR}/${PLATFORM}/linux")
-set(VM_IMG_ROOTFS "${CAMKES_VM_IMAGES_DIR}/${PLATFORM}/rootfs.cpio.gz")
 set(VM_IMG_DTB "${CAMKES_VM_IMAGES_DIR}/${PLATFORM}/linux-dtb")
-
-# patch DTB to use proper 'initrd-start' and 'initrd-end'
-# UpdateDtbFromInitrd(
-#     "${VM_IMG_DTB}"
-#     "${VM_IMG_ROOTFS}"
-#     "0x4d700000" # initrd start
-#     target_dtb_gen
-#     VM_IMG_DTB_PATCHED
-# )
 
 DefineCAmkESVMFileServer(
     INSTANCE "fileServer"
     FILES
         "linux:${VM_IMG_LINUX}"
-        "linux-initrd:${VM_IMG_ROOTFS}"
         "linux-dtb:${VM_IMG_DTB}"
-    # DEPENDS
-    #     target_dtb_gen
 )
 
 
